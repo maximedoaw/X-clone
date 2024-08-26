@@ -15,10 +15,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <div className="flex justify-between items-center max-w-6xl mx-auto">
-          <div>
+          <div className="hidden sm:inline border-r h-screen">
             <SideBar />
           </div>
-          <div>{children}</div>
+          <div className="sticky">{children}</div>
           <div>
             <News />     
           </div>
