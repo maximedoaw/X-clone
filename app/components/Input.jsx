@@ -1,11 +1,58 @@
 "use client"
 
 import { useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
 import { HiOutlinePhotograph } from "react-icons/hi";
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import { app } from "@/firebase";
 
 function Input() {
   const {data : session} = useSession()
+  const [imageFileUrl,setImageFileUrl] = useState(null)
+  const [selectedFile,setSelectedFile] = useState(null)
+  const [imageFileUploading,setImageFileUploading] = useState(false)
+  const imagePickRef = useRef(null)
+  const addImageToPost = (e) =>{
+    const file = e.target.files[0]
+    if(file){
+      setSelectedFile(file)
+      setImageFileUrl(URL.createObjectURL(file))      
+    }
+  }
+  
+  useEffect(() =>{
+    if(selectedFile){
+      uploadImageToStorage()
+    }
+  },[selectedFile])
 
+  const uploadImageToStorage = () =>{
+    setImageFileUploading(true)
+    const storage = getStorage(app)
+    const fileName = new Date().getTime() + "-" + selectedFile.name
+    const storageRef = ref(storage,fileName)
+    const uploadTask = uploadBytesResumable(storageRef,selectedFile)
+    
+    uploadTask.on(
+      'state_changed',
+      (snapshot) =>{
+        const progress = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
+        console.log('Upload is ' + progress + '% done');
+      },
+      (error) => {
+        console.error('An error was happened :',error);
+        setImageFileUploading(false)
+        setImageFileUrl(null)
+        setSelectedFile(null)
+      },
+      () =>{
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>{
+          setImageFileUrl(downloadURL)
+          setImageFileUploading(false)
+        })
+      }
+    )
+  }
   if(!session) return null
 
   return (
@@ -21,15 +68,26 @@ function Input() {
         placeholder='Whats happening'
         rows='2'
       ></textarea>
-
+      {
+        selectedFile && (
+          <img 
+            src={imageFileUrl} 
+            alt="image" 
+            className="w-full max-h-[250px] object-cover cursor-pointer"
+          />
+        )
+      }
       <div className='flex items-center justify-between pt-2.5'>
         <HiOutlinePhotograph
           className='h-10 w-10 p-2 text-sky-500 hover:bg-sky-100 rounded-full cursor-pointer'
+          onClick={() => imagePickRef.current.click()}
         />
         <input
           type='file'
           accept='image/*'
           hidden
+          ref={imagePickRef}
+          onChange={addImageToPost}
         />
         <button
         disabled
