@@ -3,7 +3,7 @@
 import {SessionProvider} from 'next-auth/react'
 import { RecoilRoot } from "recoil";
 
-const SessionWrapper = ({children}) => {
+const SessionWrapper = ({ children }) => {
   return (
     <SessionProvider>
       <RecoilRoot>

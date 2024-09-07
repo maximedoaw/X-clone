@@ -6,14 +6,15 @@ import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { HiOutlineChat,HiOutlineHeart,HiOutlineTrash,HiHeart } from "react-icons/hi";
 import { useRecoilState } from "recoil";
-import { modalState } from "../atom/modalAtom";
+import { modalState, postIdState } from "../atom/modalAtom";
 
 export default function Icons({ id, uid }){
     const { data : session } = useSession()
     const [isLiked,setIsLiked] = useState(false)
     const [likes,setLikes] = useState([])
     const [comments, setComments] = useState([]); 
-    const [open,setOpen] = useRecoilState(modalState)
+    const [open,setOpen] = useRecoilState(modalState) // initial value
+    const [postId,setPostId] = useRecoilState(postIdState) // initial value
 
     const likePost = async () => {
       if (session) {
@@ -63,7 +64,14 @@ export default function Icons({ id, uid }){
         <div className="flex justify-start gap-5 p-2 text-gray-500">
             <HiOutlineChat className="h-8 w-8 cursor-pointer rounded-full transition duration-300
             ease-in-out p-2 hover:text-sky-500 hover:bg-sky-100" 
-            onClick={() => setOpen(!open)}
+            onClick={() =>{
+              if(!session){
+                signIn()
+              } else {
+                setOpen(!open)
+                setPostId(id)
+              }
+            }}
             />
             <div className="flex items-center">
                 {isLiked ? 
