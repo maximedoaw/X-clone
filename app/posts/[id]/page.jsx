@@ -3,8 +3,9 @@ import { doc, getDoc } from "firebase/firestore"
 import { HiArrowLeft } from "react-icons/hi";
 import Link from "next/link";
 import Post from "@/app/components/Post";
+import Comments from "@/app/components/Comments";
 
-async function page({params}) {
+async function PostPage({params}) {
   let data = {}
   const querySnapshot = await getDoc(doc(db,'posts',params.id))
   data = { ...querySnapshot.data(),id: querySnapshot.id }
@@ -19,8 +20,9 @@ async function page({params}) {
         <h2 className="sm:text-lg">Back</h2>
       </div>
       <Post post={data} id={data.id}/>
+      <Comments id={params.id}/>
     </div>
   )
 }
 
-export default page
+export default PostPage
